@@ -31,6 +31,20 @@ to the DOM and visible in the source (most often v-if is used, v-show is used fo
 v-cloak: utility that hides anything from rendering until whole application is ready.
 Useful for cases where vue templating syntax and conditional items are displayed for 
 a short time when loading the page (needs CSS Styling with display: none)
+
+
+-->
+
+<!-- Events and Methods 
+v-on: specific for events (custom or any of standard browser events (clicks, key press))
+shorthand for v-on:click is @click
+
+@keyup/v-on:keyup: listen for keyboard input, needs an "event-modifier" to say which keyboard input to listen for
+(e.g. enter: keyup.enter or keyup.13 (Key Code!))
+
+Event Modifiers:
+@click.right for only right click
+@click.prevent.stop, you can chain as many modifiers as you want
 -->
 
 <html>
@@ -59,13 +73,14 @@ a short time when loading the page (needs CSS Styling with display: none)
       <!-- double moustache (common templating) syntax to use variables in vue 
       everything inside double moustache will be parsed as javascript, vue looks for variable with fitting name -->
       {{ greeting }}
-      <input v-model="greeting"/>
+      <input @keyup.enter="greet(greeting + '!!!!!')" v-model="greeting"/>
 
       <hr/>
-
+      <!-- Button to change variable value -->
+      <button @click="toggleBox">Toggle Box</button>
       <div v-if="isVisible" class="box"></div>
-      <div v-else-if="isVisible2" class="box two"></div>
-      <div v-else class="box three"></div>
+      <!-- <div v-else-if="isVisible2" class="box two"></div>
+      <div v-else class="box three"></div> -->
     </div>
 
     <script src="https://unpkg.com/vue@next"></script>
@@ -80,6 +95,16 @@ a short time when loading the page (needs CSS Styling with display: none)
             greeting: 'Hello Vue 3!',
             isVisible: false,
             isVisible2: true
+          }
+        },
+        // methods is an object of functions
+        methods: {
+          // function shorthand for toggleBox: function() {}
+          toggleBox() {
+            this.isVisible = !this.isVisible;
+          },
+          greet(passedInGreeting) {
+            console.log(passedInGreeting);
           }
         }
       });
