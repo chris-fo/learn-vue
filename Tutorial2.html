@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<!-- Vue Components
+Break up Vue application in multiple components to prepare
+larger applications and use Vue CLI 
+
+We will build: A Form with separate components:
+- Form will be outer component
+- Inputs will be inner components
+-->
+
+<html>
+  <head>
+    <title>Vue 3 Basics 2</title>
+    <style>
+        input {
+            margin: 10px;
+            display: block;
+        }
+    </style>
+  </head>
+  <body>
+    <div id='app' v-cloak>
+      <!-- custom tag as a vue component, has to be defined somewhere -->
+      <login-form />
+      
+      </div>
+
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      let app = Vue.createApp({
+        // this is the options object, here we define any variables
+        // or functions that are used in vue application
+        data: function() {
+          // data needs to return an object
+          return {
+          }
+        },
+        // methods is an object of functions
+        methods: {
+          // function shorthand for toggleBox: function() {}
+          toggleBox() {
+            this.isVisible = !this.isVisible;
+          },
+          greet(passedInGreeting) {
+            console.log(passedInGreeting);
+          }
+        }
+      });
+      // lets vue instance interact with every DOM Element inside of div with id 'app'
+      app.component('login-form', {
+          // options object
+          // template is only required option for custom component
+          template: `
+            <form @submit.prevent="handleSubmit">
+              <h1> {{ title }} </h1>
+              <!-- v-model is also listening to update event from child -->
+              <custom-input v-model="email" :label="emailLabel"/>
+              <custom-input v-model="password" :label="passwordLabel"/> 
+              <button>Log in</button> 
+            </form>
+          `,
+          // registering components: let login-form know about the custom-input
+          // component
+          components: ['custom-input'],
+          data() {
+              // values defined in data can only be changed in same component, 
+              // so we need to pass values up from child to parent if we want to change them
+              return {
+                title: 'Login Form',
+                email: '',
+                password: '',
+                emailLabel: 'E-Mail',
+                passwordLabel: 'Password'
+              }
+          },
+          methods: {
+              handleSubmit() {
+                  console.log(this.email, this.password);
+              }
+          }
+      });
+      app.component('custom-input', {
+          template: `
+            <label>
+                {{ label }}
+                <!-- issue: we don't have access to what is entered here in parent component -->
+                <input type='text' v-model="inputValue"/>
+            </label>`,
+            // list of information passed down from parent to child via v-bind
+            // note! modelValue describes the value, that is bound via v-model.
+            // v-model="email" actually equals to v-bind:modelValue="email"
+            // -> we need to accept the v-model value in the child via the props
+            // props are read ONLY!
+            props: ['label', 'modelValue'],
+            // passing values from child to parent via computed object
+            // pass variables as Keys, whenever variable that matches Key changes, 
+            // run getter and setter functions
+            computed: {
+              // modeling inputValue to getter function, saying the value will be what is 
+              // passed down by the parent via the modelValue
+              inputValue: {
+                get() {
+                  return this.modelValue
+                },
+                set(randomNameValue) {
+                  // set typed in value in variable by emitting an event
+                  // -> pass data around in vue application using events
+                  this.$emit('update:modelValue', randomNameValue)
+                }
+              }
+            }
+            // data() {
+            //     return {
+            //         inputValue: ''
+            //     }
+            // }
+      })
+      app.mount('#app');
+    </script>
+  </body>
+</html>
