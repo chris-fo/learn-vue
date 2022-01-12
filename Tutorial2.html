@@ -8,6 +8,22 @@ We will build: A Form with separate components:
 - Inputs will be inner components
 -->
 
+<!-- 
+    Component Llifecycle Hooks
+    Coming into the DOM and leaving the DOM (via v-if, loading another page, scrolling, ...)
+    Hooks: function, that is triggered to run at specific point in lifecycle of component
+    (Lifecycle Diagram in Vue Documentation)
+
+    What are they used for?
+    - Check if a user is authorized as soon as page is created
+    - Created and Mounted Hooks are often used to pull data from 
+    backend or in-browser storage (API Calls)
+    - Initialize Events, Remove Events
+    - Clean Up Data, Save Data beforeUnmount or in unmounted function
+
+
+-->
+
 <html>
   <head>
     <title>Vue 3 Basics 2</title>
@@ -53,9 +69,15 @@ We will build: A Form with separate components:
           template: `
             <form @submit.prevent="handleSubmit">
               <h1> {{ title }} </h1>
+              <!-- <p v-for="(str, i) in inputs" :key="i"> {{ str + ' ' + i }} </p> -->
               <!-- v-model is also listening to update event from child -->
-              <custom-input v-model="email" :label="emailLabel"/>
-              <custom-input v-model="password" :label="passwordLabel"/> 
+              <custom-input 
+                v-for="(input, i) in inputs"
+                :key="i"
+                v-model="input.value" 
+                :label="input.label"
+                :type="input.type"
+              />
               <button>Log in</button> 
             </form>
           `,
@@ -67,16 +89,36 @@ We will build: A Form with separate components:
               // so we need to pass values up from child to parent if we want to change them
               return {
                 title: 'Login Form',
-                email: '',
-                password: '',
-                emailLabel: 'E-Mail',
-                passwordLabel: 'Password'
+                inputs: [
+                  {
+                      label: 'Email',
+                      value: '',
+                      type: 'email'
+                  },
+                  {
+                      label: 'Password',
+                      value: '',
+                      type: 'password'
+                  }
+                ]
               }
           },
           methods: {
               handleSubmit() {
-                  console.log(this.email, this.password);
+                  console.log(this.inputs[0].value, this.inputs[1].value);
               }
+          },
+          // lifecycle hooks
+          created() {
+              console.log('created');
+          },
+          mounted() {
+              console.log('mounted');
+          },
+          // unmounted is never called, would be called if element would be
+          // removed from DOM via e.g. a v-if
+          unmounted() {
+              console.log('unmounted');
           }
       });
       app.component('custom-input', {
@@ -84,14 +126,14 @@ We will build: A Form with separate components:
             <label>
                 {{ label }}
                 <!-- issue: we don't have access to what is entered here in parent component -->
-                <input type='text' v-model="inputValue"/>
+                <input :type="type" v-model="inputValue"/>
             </label>`,
             // list of information passed down from parent to child via v-bind
             // note! modelValue describes the value, that is bound via v-model.
             // v-model="email" actually equals to v-bind:modelValue="email"
             // -> we need to accept the v-model value in the child via the props
             // props are read ONLY!
-            props: ['label', 'modelValue'],
+            props: ['label', 'type', 'modelValue'],
             // passing values from child to parent via computed object
             // pass variables as Keys, whenever variable that matches Key changes, 
             // run getter and setter functions
