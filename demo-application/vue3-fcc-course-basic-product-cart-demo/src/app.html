@@ -41,7 +41,7 @@
 
         <div class="recommended">
 
-          <div v-for="(product, i) in inventory.slice(0,3)" :key="i" class="card">
+          <div v-for="(product, i) in inventory.slice(0,3)" :key="product.id" class="card">
             <div class="card-title">
               {{ product.name }}
             </div>
@@ -69,13 +69,13 @@
                     <label>Quantity:</label>
                   </div>
                   <div class="cell">
-                    <input type="number" v-model.number="inventory[i].quantity">
+                    <input type="number" v-model.number="product.quantity">
                   </div>
                 </div>
               </form>
             </div>
             <div class="card-footer">
-              <button @click="addToCart('carrots')" class="btn btn-light">
+              <button @click="addToCart(product.name, i)" class="btn btn-light">
                 Add to cart
               </button>
             </div>
@@ -89,6 +89,7 @@
         v-if="showSidebar" 
         :toggle="toggleSidebar"
         :cart="cart"
+        :inventory="inventory"
       />
 
       <footer>
@@ -103,16 +104,14 @@
           return {
             showSidebar: false,
             inventory: [],
-            cart: {
-              carrots: 0,
-              pineapples: 0,
-              cherries: 0
-            }
+            cart: {}
           }
         },
         methods: {
-          addToCart(type) {
-            this.cart[type] += this.inventory[type];
+          addToCart(name, index) {
+            // null check for this.cart[name], since += on an undefined value results in NaN
+            if (!this.cart[name]) this.cart[name] = 0;
+            this.cart[name] += this.inventory[index].quantity;
             console.log(this.cart);
           },
           toggleSidebar() {
@@ -129,11 +128,31 @@
         }
       });
       app.component(('sidebar'), {
-        props: ['toggle', 'cart'],
+        props: ['toggle', 'cart', 'inventory'],
         // watches changes in variables and update result
         computed: {
-          cartTotal() {
-            return (this.cart.carrots * 4.82).toFixed(2);
+        },
+        methods: {
+          getPrice(name) {
+            const product = this.inventory.find((p) => {
+              return p.name === name;
+            })
+            return product.price.USD;
+          },
+          calculateTotal() {
+            // My solution:
+            // let sum = 0;
+            // for(let i in this.cart) {
+            //   sum += (this.cart[i] * this.getPrice(i));
+            // }
+            // return sum;
+            
+            // Video solution
+            // each entry "curr" will be an array of [key, value]
+            const total = Object.entries(this.cart).reduce((acc, curr, index) => {
+              return acc + (curr[1] * this.getPrice(curr[0]));
+            }, 0)
+            return total.toFixed(2);
           }
         },
         template: `
@@ -160,11 +179,11 @@
                 </tr>
               </thead>
               <tbody>
-                <tr>
+                <tr v-for="(quantity, key, i) in cart" :key="i">
                   <td><i class="icofont-carrot icofont-3x"></i></td>
-                  <td>Carrot</td>
-                  <td>$1.00</td>
-                  <td class="center">{{ cart.carrots }}</td>
+                  <td>{{ key }}</td>
+                  <td>\${{ getPrice(key) }}</td>
+                  <td class="center">{{ quantity }}</td>
                   <td>\${{ cart.carrots * 4.82 }}</td>
                   <td class="center">
                     <button class="btn btn-light cart-remove">
@@ -177,7 +196,7 @@
 
             <p class="center"><em>No items in cart</em></p>
             <div class="spread">
-              <span><strong>Total:</strong> \${{ cartTotal }} </span>
+              <span><strong>Total:</strong> \${{ calculateTotal() }} </span>
               <button class="btn btn-light">Checkout</button>
             </div>
           </div>
