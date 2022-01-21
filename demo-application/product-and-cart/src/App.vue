@@ -64,12 +64,10 @@ export default {
     }
   },
   methods: {
-    addToCart (name, index) {
+    addToCart (name, quantity) {
       // null check for this.cart[name], since += on an undefined value results in NaN
       if (!this.cart[name]) this.cart[name] = 0
-      this.cart[name] += this.inventory[index].quantity
-      // clear number entered in input form after adding to cart
-      this.inventory[index].quantity = ''
+      this.cart[name] += quantity
     },
     toggleSidebar () {
       this.showSidebar = !this.showSidebar
